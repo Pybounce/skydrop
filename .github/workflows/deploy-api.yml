@@ -1,0 +1,41 @@
+name: Deploy API
+
+on:
+  push:
+    paths:
+      - "backend/SkyDrop.Api"
+      - ".github/workflows/deploy-api.yml"
+  workflow_dispatch:
+
+env:
+  ACR_NAME: skydropacr
+  IMAGE_NAME: skydrop-api
+  WEBAPP_NAME: skydrop-api
+  API_DIR: backend/SkyDrop.Api
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v5
+
+      - name: ACR Login
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.ACR_NAME }}.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and Push Image
+        run: |
+          IMAGE=${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}
+          docker build -t $IMAGE:${{ github.sha }} -t $IMAGE:latest ${{ env.API_DIR }}
+          docker push --all-tags $IMAGE
+
+      - name: Update WebApp
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.WEBAPP_NAME }}
+          publish-profile: ${{ secrets.WEBAPP_PUBLISH_PROFILE }}
+          images: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
