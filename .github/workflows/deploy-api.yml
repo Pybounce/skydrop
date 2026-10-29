@@ -3,7 +3,7 @@ name: Deploy API
 on:
   push:
     paths:
-      - "backend/SkyDrop.Api"
+      - "backend/SkyDrop.Api/**"
       - ".github/workflows/deploy-api.yml"
   workflow_dispatch:
 
