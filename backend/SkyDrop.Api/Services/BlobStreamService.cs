@@ -51,14 +51,14 @@ public class BlobStreamService : IStreamService
         
     }
 
-    public async Task<FileInfo?> FileInfoAsync(string fileId, CancellationToken ct)
+    public async Task<OLDDELETEME_FileInfo?> FileInfoAsync(string fileId, CancellationToken ct)
     {
         var blob = _containerClient.GetBlockBlobClient(fileId);
         try
         {
             var props = (await blob.GetPropertiesAsync(cancellationToken: ct)).Value;
             var fileName = props.Metadata.TryGetValue("filename", out var encodedName) ? Uri.UnescapeDataString(encodedName) : fileId;
-            return new FileInfo
+            return new OLDDELETEME_FileInfo
             {
                 FileName = fileName,
                 Size = props.ContentLength

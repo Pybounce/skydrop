@@ -8,6 +8,6 @@ public interface IStreamService
 
     public Task<Stream?> DownloadAsync(string key, CancellationToken ct);
 
-    public Task<FileInfo?> FileInfoAsync(string fileId, CancellationToken ct);
+    public Task<OLDDELETEME_FileInfo?> FileInfoAsync(string fileId, CancellationToken ct);
 
 }
