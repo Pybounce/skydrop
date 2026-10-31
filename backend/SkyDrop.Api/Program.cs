@@ -9,7 +9,6 @@ var blobConnectionString = builder.Configuration.GetConnectionString("FileStorag
 var blobContainerName = builder.Configuration["FileStorage:ContainerName"] ?? throw new InvalidOperationException("FileStorage:ContainerName is not configured.");
 
 var cosmosConnectionString = builder.Configuration.GetConnectionString("Cosmos") ?? throw new InvalidOperationException("Cosmos connection string is not configured.");
-//var cosmosContainerName = builder.Configuration["Cosmos:ContainerName"] ?? throw new InvalidOperationException("Cosmos:ContainerName is not configured.");
 var cosmosDatabaseName = builder.Configuration["Cosmos:DatabaseName"] ?? throw new InvalidOperationException("Cosmos:DatabaseName is not configured.");
 
 // Add services to the container.

@@ -11,20 +11,22 @@ public class FileController: ControllerBase
 {
 
     private readonly IStreamService _streamService;
+    private readonly IUsageLimiter _usageLimiter;
 
-    public FileController(IStreamService streamService)
+    public FileController(IStreamService streamService, IUsageLimiter usageLimiter)
     {
         _streamService = streamService;
+        _usageLimiter = usageLimiter;
     }
 
     [HttpPost(Name = "Upload")]
     [RequestSizeLimit(5L * 1024 * 1024 * 1024)]
     public async Task<IActionResult> Upload(CancellationToken ct)
     {
-        return StatusCode(StatusCodes.Status501NotImplemented);
         if (Request.ContentLength == null) { return StatusCode(StatusCodes.Status411LengthRequired); }
-        var size = Request.ContentLength;
-        // rate limit and addition here.
+        var size = Request.ContentLength.Value;
+        if (await _usageLimiter.TryReserveUploadAsync(size, ct) == false) { return Problem(null, null, StatusCodes.Status429TooManyRequests, "Update quota reached.", null); }
+
         // ensure a min size also
 
         var input = Request.Body;
@@ -37,12 +39,12 @@ public class FileController: ControllerBase
     [HttpGet("{key}", Name = nameof(Download))]
     public async Task<IActionResult> Download(string key, CancellationToken ct)
     {
-        return StatusCode(StatusCodes.Status501NotImplemented);
 
         var fileInfo = await _streamService.FileInfoAsync(key, ct);
         if (fileInfo == null) { return NotFound(); }
 
-        // rate limit check and addition here
+        var size = fileInfo.Size;
+        if (await _usageLimiter.TryReserveDownloadAsync(size, ct) == false) { return Problem(null, null, StatusCodes.Status429TooManyRequests, "Download quota reached.", null); }
 
         var stream = await _streamService.DownloadAsync(key, ct);
         if (stream == null) { return NotFound(); }
