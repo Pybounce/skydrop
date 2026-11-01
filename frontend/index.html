@@ -229,7 +229,7 @@
         xhr.upload.addEventListener("progress", (event) => {
           if (event.lengthComputable) {
             const progress = Math.round((event.loaded / event.total) * 100);
-            showStatus("Uploading ${file.name} [${percent}%]");
+            showStatus(`Uploading ${file.name} [${percent}%]`);
           }
         });
 
@@ -255,7 +255,7 @@
         });
 
         fileInput.disabled = true;
-        showStatus("Uploading ${file.name} [0%]");
+        showStatus(`Uploading ${file.name} [0%]`);
         xhr.send(file);
       }
 
