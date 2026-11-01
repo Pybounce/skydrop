@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Skydrop</title>
+    <style>
+      :root {
+        --bg: #f4f6f9;
+        --surface: #ffffff;
+        --surface-muted: #f8fafc;
+        --text: #0f172a;
+        --text-muted: #5b6475;
+        --border: #b9c3d3;
+        --accent: #1d5fc2;
+        --accent-hover: #174e9f;
+        --accent-soft: #e6eefb;
+        --radius: 20px;
+        --font: "Space Grotesk", system-ui, sans-serif;
+        --front-mono: "JetBrains Mono", ui-monospace, monospace;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 24px 32px;
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text);
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 20px;
+      }
+
+      main {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 16px 64px;
+      }
+      .card {
+        width: 100%;
+        max-width: 560px;
+        background-color: var(--surface);
+        border-radius: var(--radius);
+        box-shadow:
+          0 1px 2px rgba(15, 23, 42, 0.06),
+          0 12px 32px rgba(15, 23, 42, 0.08);
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+      .card h1 {
+        margin: 0 0 6px;
+        font-size: 32px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+      .subtitle {
+        margin: 0;
+        font-size: 16px;
+        color: var(--text-muted);
+      }
+
+      .dropzone {
+        border: 2px dashed var(--border);
+        border-radius: 16px;
+        background: var(--surface-muted);
+        padding: 48px 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+        text-align: center;
+      }
+      .dropzone-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: var(--accent-soft);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .dropzone-title {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 500;
+      }
+      .dropzone-or {
+        margin: 0;
+        font-size: 14px;
+        color: var(--text-muted);
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-height: 44px;
+        padding: 0 22px;
+        border: 0;
+        border-radius: 10px;
+        background: var(--accent);
+        color: #ffffff;
+        font-family: inherit;
+        font-size: 16px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .button:hover {
+        background: var(--accent-hover);
+      }
+
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      .status:empty {
+        display: none;
+      }
+      .status.error {
+        color: #b42318;
+      }
+
+      @media (max-width: 480px) {
+        .card {
+          padding: 28px 20px;
+        }
+        .card h1 {
+          font-size: 26px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <a class="logo" href="/"> Skydrop </a>
+    </header>
+    <main>
+      <section class="card" id="upload-view">
+        <div>
+          <h1>Upload a file</h1>
+          <p class="subtitle">
+            Upload and recieve a link anyone can download from.
+          </p>
+        </div>
+
+        <div class="dropzone" id="dropzone">
+          <div class="dropzone-icon">
+            <svg
+              width="30"
+              height="30"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#1D5FC2"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M12 16V4" />
+              <path d="M7 9l5-5 5 5" />
+              <path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" />
+            </svg>
+          </div>
+          <p class="dropzone-title">Drag a file here</p>
+          <p class="dropzone-or">or</p>
+          <input class="visually-hidden" type="file" id="file-input" />
+          <label class="button" for="file-input">Browse files</label>
+        </div>
+        <p class="status" id="upload-status" role="status"></p>
+      </section>
+    </main>
+    <script>
+      const API_BASE =
+        "https://skydrop-api-g0fmbwavgrh9grfu.uksouth-01.azurewebsites.net/File";
+      const fileInput = document.getElementById("file-input");
+      const uploadStatus = document.getElementById("upload-status");
+
+      fileInput.addEventListener("change", () => {
+        const file = fileInput.files[0];
+        uploadFile(file);
+      });
+
+      function uploadFile(file) {
+        if (!file) {
+          return;
+        }
+
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", API_BASE);
+        xhr.setRequestHeader("Content-Type", "application/octet-stream");
+        xhr.setRequestHeader("X-File-Name", encodeURIComponent(file.name));
+
+        xhr.upload.addEventListener("progress", (event) => {
+          if (event.lengthComputable) {
+            const progress = Math.round((event.loaded / event.total) * 100);
+            showStatus("Uploading ${file.name} [${percent}%]");
+          }
+        });
+
+        xhr.addEventListener("load", () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            const fileId = xhr.responseText.trim();
+            window.location.href = "/" + encodeURIComponent(fileId);
+          } else if (xhr.status === 413) {
+            showError("That file is too large.");
+          } else if (xhr.status === 429) {
+            showError(
+              "The upload limit for Skydrop has been reached. Please try again later.",
+            );
+          } else {
+            showError(
+              "Something went wrong uploading your file. Please try again.",
+            );
+          }
+        });
+
+        xhr.addEventListener("error", () => {
+          showError("The upload failed. Please try again.");
+        });
+
+        fileInput.disabled = true;
+        showStatus("Uploading ${file.name} [0%]");
+        xhr.send(file);
+      }
+
+      function showStatus(message) {
+        uploadStatus.classList.remove("error");
+        uploadStatus.textContent = message;
+      }
+
+      function showError(message) {
+        uploadStatus.classList.add("error");
+        uploadStatus.textContent = message;
+        fileInput.disabled = false;
+        fileInput.value = "";
+      }
+    </script>
+  </body>
+</html>
