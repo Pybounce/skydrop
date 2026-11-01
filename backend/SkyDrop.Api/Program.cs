@@ -31,6 +31,7 @@ builder.Services.Configure<MonthlyUsageLimits>(o => {
 builder.Services.AddSingleton<IUsageDb, CosmosUsageDb>();
 builder.Services.AddSingleton<IUsageLimiter, MonthlyUsageLimiter>();
 
+builder.Services.AddSingleton<IFileMetadataDb, CosmosFileMetadataDb>();
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
