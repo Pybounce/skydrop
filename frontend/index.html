@@ -24,6 +24,10 @@
         box-sizing: border-box;
       }
 
+      [hidden] {
+        display: none !important;
+      }
+
       body {
         margin: 0;
         min-height: 100vh;
@@ -132,9 +136,23 @@
         text-decoration: none;
         cursor: pointer;
       }
-
       .button:hover {
         background: var(--accent-hover);
+      }
+      .button-large {
+        min-height: 56px;
+        border-radius: 12px;
+        font-size: 18px;
+      }
+      .button-secondary {
+        background: var (--surface);
+        color: var(--text);
+        border: 1px solid var(--border-soft);
+        font-weight: 500;
+        padding: 0 16px;
+      }
+      .button-secondary:hover {
+        background: var(--surface-muted);
       }
 
       .visually-hidden {
@@ -156,6 +174,83 @@
         color: #b42318;
       }
 
+      .file-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .file-icon {
+        width: 56px;
+        height: 56px;
+        flex-shrink: 0;
+        border-radius: 14px;
+        background: var(--accent-soft);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .file-name {
+        margin: 0 0 4px;
+        font-size: 24px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        overflow-wrap: anywhere;
+      }
+      .file-details {
+        margin: 0;
+        font-size: 15px;
+        color: var(--text-muted);
+      }
+      .stats {
+        margin: 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 12px;
+      }
+      .stat {
+        background: var(--surface-muted);
+        border-radius: 12px;
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .stat dt {
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+      .stat dd {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+      }
+      .share {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .share label {
+        font-size: 14px;
+        font-weight: 500;
+        color: #334155;
+      }
+      .share-row {
+        display: flex;
+        gap: 8px;
+      }
+      .share-row input {
+        flex: 1;
+        min-width: 0;
+        min-height: 44px;
+        padding: 0 14px;
+        border: 1px solid var(--border-soft);
+        border-radius: 10px;
+        background: var(--surface-muted);
+        color: var(--text);
+        font-family: var(--font-mono);
+        font-size: 14px;
+      }
+
       @media (max-width: 480px) {
         .card {
           padding: 28px 20px;
@@ -171,7 +266,7 @@
       <a class="logo" href="/"> Skydrop </a>
     </header>
     <main>
-      <section class="card" id="upload-view">
+      <section class="card" id="upload-view" hidden>
         <div>
           <h1>Upload a file</h1>
           <p class="subtitle">
@@ -204,10 +299,101 @@
         </div>
         <p class="status" id="upload-status" role="status"></p>
       </section>
+      <section class="card" id="download-view" hidden>
+        <p class="status" id="download-status" role="status">Loading...</p>
+
+        <div id="file-info" hidden>
+          <div class="file-header">
+            <div class="file-icon">
+              <svg
+                width="26"
+                height="26"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#1D5FC2"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"
+                />
+                <path d="M14 3v5h5" />
+              </svg>
+            </div>
+            <div>
+              <h1 class="file-name" id="file-name"></h1>
+              <p class="file-details" id="file-details"></p>
+            </div>
+          </div>
+        </div>
+        <d1 class="stats" id="file-stats" hidden>
+          <div class="stat">
+            <dt>Size</dt>
+            <dd id="file-size"></dd>
+          </div>
+          <div class="stat">
+            <dt>Downloads</dt>
+            <dd id="file-downloads"></dd>
+          </div>
+        </d1>
+
+        <a class="button button-large" id="download-button" href="#" hidden>
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M12 4v12" />
+            <path d="M7 11l5 5 5-5" />
+            <path d="M4 20h16" />
+          </svg>
+          Download
+        </a>
+
+        <div class="share" id="share" hidden>
+          <label for="share-link">Share link</label>
+          <div class="share-row">
+            <input id="share-link" type="text" readonly />
+            <button
+              class="button button-secondary"
+              type="button"
+              id="copy-button"
+            >
+              Copy
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" id="not-found-view" hidden>
+        <div>
+          <h1>Link not found</h1>
+          <p class="subtitle">This link has expired or does not exist.</p>
+        </div>
+        <a class="button" href="/">Send a file</a>
+      </section>
     </main>
     <script>
       const API_BASE =
         "https://skydrop-api-g0fmbwavgrh9grfu.uksouth-01.azurewebsites.net/File";
+
+      const fileId = decodeURIComponent(window.location.pathname.slice(1));
+      if (fileId) {
+        document.getElementById("download-view").hidden = false;
+        loadFile(fileId);
+      } else {
+        document.getElementById("upload-view").hidden = false;
+      }
+
+      // Upload
       const fileInput = document.getElementById("file-input");
       const uploadStatus = document.getElementById("upload-status");
 
@@ -229,7 +415,7 @@
         xhr.upload.addEventListener("progress", (event) => {
           if (event.lengthComputable) {
             const progress = Math.round((event.loaded / event.total) * 100);
-            showStatus(`Uploading ${file.name} [${percent}%]`);
+            showUploadStatus(`Uploading ${file.name} [${percent}%]`);
           }
         });
 
@@ -238,37 +424,132 @@
             const fileId = xhr.responseText.trim();
             window.location.href = "/" + encodeURIComponent(fileId);
           } else if (xhr.status === 413) {
-            showError("That file is too large.");
+            showUploadError("That file is too large.");
           } else if (xhr.status === 429) {
-            showError(
+            showUploadError(
               "The upload limit for Skydrop has been reached. Please try again later.",
             );
           } else {
-            showError(
+            showUploadError(
               "Something went wrong uploading your file. Please try again.",
             );
           }
         });
 
         xhr.addEventListener("error", () => {
-          showError("The upload failed. Please try again.");
+          showUploadError("The upload failed. Please try again.");
         });
 
         fileInput.disabled = true;
-        showStatus(`Uploading ${file.name} [0%]`);
+        showUploadStatus(`Uploading ${file.name} [0%]`);
         xhr.send(file);
       }
 
-      function showStatus(message) {
+      function showUploadStatus(message) {
         uploadStatus.classList.remove("error");
         uploadStatus.textContent = message;
       }
 
-      function showError(message) {
+      function showUploadError(message) {
         uploadStatus.classList.add("error");
         uploadStatus.textContent = message;
         fileInput.disabled = false;
         fileInput.value = "";
+      }
+
+      // Download
+      const downloadStatus = document.getElementById("download-status");
+
+      async function loadFile(id) {
+        let response;
+        try {
+          response = await fetch(
+            `${API_BASE}/Metadata/${encodeURIComponent(id)}`,
+          );
+        } catch {
+          showDownloadError("Could not reach the server.");
+          return;
+        }
+
+        if (response.status === 404) {
+          showNotFound();
+          return;
+        }
+
+        if (!response.ok) {
+          showDownloadError("Something went wrong loading the file.");
+        }
+
+        const metadata = await response.json();
+        showFile(id, metadata);
+      }
+
+      function showFile(id, metadata) {
+        document.getElementById("file-name").textContent = metadata.name;
+        document.getElementById("file-details").textContent =
+          `${fileType(metadata.name)}`;
+        document.getElementById("file-downloads").textContent =
+          metadata.downloadCount;
+        document.getElementById("file-size").textContent = formatBytes(
+          metadata.size,
+        );
+
+        document.getElementById("download-button").href =
+          `${API_BASE}/Download/${encodeURIComponent(id)}`;
+        document.getElementById("share-link").value = window.location.href;
+        document.title = `${metadata.name} - Skydrop`;
+
+        downloadStatus.textContent = "";
+        document.getElementById("file-info").hidden = false;
+        document.getElementById("file-stats").hidden = false;
+        document.getElementById("download-button").hidden = false;
+        document.getElementById("share").hidden = false;
+      }
+
+      function showNotFound() {
+        document.getElementById("download-view").hidden = true;
+        document.getElementById("not-found-view").hidden = false;
+      }
+
+      function showDownloadError(message) {
+        downloadStatus.classList.add("error");
+        downloadStatus.textContent = message;
+      }
+
+      const copyButton = document.getElementById("copy-button");
+      copyButton.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(
+            document.getElementById("share-link").value,
+          );
+          copyButton.textContent = "Copied!";
+        } catch {
+          document.getElementById("share-link").select();
+          copyButton.textContent = "Press Ctrl+C";
+        }
+        setTimeout(() => {
+          copyButton.textContent = "Copy";
+        }, 2000);
+      });
+
+      function formatBytes(bytes) {
+        const units = ["bytes", "KB", "MB", "GB", "TB"];
+        let value = bytes;
+        let unit = 0;
+        while (value >= 1000 && unit < units.length - 1) {
+          value /= 1000;
+          unit += 1;
+        }
+        const decimals = unit === 0 || value >= 100 ? 0 : 1;
+        return `${value.toFixed(decimals)} ${units[unit]}`;
+      }
+
+      function fileType(fileName) {
+        const dot = fileName.lastIndexOf(".");
+        if (dot <= 0 || dot === fileName.length - 1) {
+          return "File";
+        }
+        return `${fileName.slice(dot + 1).toUpperCase()} file`;
       }
     </script>
   </body>
