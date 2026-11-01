@@ -20,7 +20,6 @@ public class BlobStreamService : IStreamService
     public async Task UploadAsync(string fileId, Stream input, CancellationToken ct)
     {
         var blob = _containerClient.GetBlockBlobClient(fileId);
-        input.Position = 0;
         await blob.UploadAsync(input, new BlobUploadOptions
         {
             Conditions = new BlobRequestConditions { IfNoneMatch = ETag.All },
