@@ -99,6 +99,10 @@
         gap: 14px;
         text-align: center;
       }
+      .dropzone-dragging {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+      }
       .dropzone-icon {
         width: 64px;
         height: 64px;
@@ -481,6 +485,30 @@
         fileInput.disabled = false;
         fileInput.value = "";
       }
+
+      // Drag + Drop
+      const dropzone = document.getElementById("dropzone");
+      window.addEventListener("dragover", (event) => event.preventDefault());
+      window.addEventListener("drop", (event) => event.preventDefault());
+
+      dropzone.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = "copy";
+        dropzone.classList.add("dragging");
+      });
+      dropzone.addEventListener("dragleave", (event) => {
+        if (!dropzone.contains(event.relatedTarget)) {
+          dropzone.classList.remove("dragging");
+        }
+      });
+      dropzone.addEventListener("drop", (event) => {
+        event.preventDefault();
+        dropzone.classList.remove("dragging");
+        if (fileInput.disabled) {
+          return;
+        }
+        uploadFile(files[0]);
+      });
 
       // Download
       const downloadStatus = document.getElementById("download-status");
