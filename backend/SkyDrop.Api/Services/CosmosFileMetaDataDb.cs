@@ -1,5 +1,6 @@
 
 
+using System.Net;
 using Microsoft.Azure.Cosmos;
 using SkyDrop.Api.ServiceInterfaces;
 
@@ -15,23 +16,40 @@ public class CosmosFileMetadataDb : IFileMetadataDb
         // I don't love having configuration outside of program.cs
         //  consider putting all container names into IOptions<CosmosContainerNames> or just a service ICosmosContainersContainer... 
         var containerName = config["Cosmos:FileMetadataContainerName"];
-        if (string.IsNullOrWhiteSpace(containerName)) { throw new InvalidOperationException("Cosmos:FileMetadataContainerName is not conofigured."); }
+        if (string.IsNullOrWhiteSpace(containerName)) { throw new InvalidOperationException("Cosmos:FileMetadataContainerName is not configured."); }
         
         _metadataContainer = db.GetContainer(containerName);
     }
 
-    public Task CreateAsync(FileMetadata metadata, CancellationToken ct)
+    public async Task CreateAsync(FileMetadata metadata, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        await _metadataContainer.CreateItemAsync(metadata);
     }
 
-    public Task<long?> IncrementDownloadsAsync(string fileId, CancellationToken ct)
+    public async Task<FileMetadata?> IncrementDownloadsAsync(string fileId, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var patch_op = PatchOperation.Increment("/downloadCount", 1);
+            var metadata = await _metadataContainer.PatchItemAsync<FileMetadata>(fileId, new PartitionKey(fileId), [patch_op], cancellationToken: ct);
+            return metadata.Resource;
+        }
+        catch (CosmosException e) when (e.StatusCode == HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+
     }
 
-    public Task<FileMetadata?> ReadAsync(string fileId, CancellationToken ct)
+    public async Task<FileMetadata?> ReadAsync(string fileId, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        try
+        {
+            return (await _metadataContainer.ReadItemAsync<FileMetadata>(fileId, new PartitionKey(fileId), null, ct)).Resource;
+        }
+        catch (CosmosException e) when (e.StatusCode == HttpStatusCode.NotFound)
+        {
+            return null;
+        }
     }
 }
