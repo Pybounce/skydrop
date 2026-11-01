@@ -2,6 +2,8 @@ name: Deploy API
 
 on:
   push:
+    branches:
+      - master
     paths:
       - "backend/SkyDrop.Api/**"
       - ".github/workflows/deploy-api.yml"
