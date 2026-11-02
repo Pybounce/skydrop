@@ -17,7 +17,8 @@
         --accent-soft: #e6eefb;
         --radius: 20px;
         --font: "Space Grotesk", system-ui, sans-serif;
-        --front-mono: "JetBrains Mono", ui-monospace, monospace;
+        --font-mono: "JetBrains Mono", ui-monospace, monospace;
+        --border-soft: #cbd5e1;
       }
 
       * {
@@ -41,7 +42,7 @@
       .header {
         display: flex;
         align-items: center;
-        justify-content: flex;
+        justify-content: flex-start;
         flex-wrap: wrap;
         gap: 12px;
         padding: 24px 32px;
@@ -99,7 +100,7 @@
         gap: 14px;
         text-align: center;
       }
-      .dropzone-dragging {
+      .dropzone.dragging {
         border-color: var(--accent);
         background: var(--accent-soft);
       }
@@ -149,7 +150,7 @@
         font-size: 18px;
       }
       .button-secondary {
-        background: var (--surface);
+        background: var(--surface);
         color: var(--text);
         border: 1px solid var(--border-soft);
         font-weight: 500;
@@ -358,7 +359,7 @@
             </div>
           </div>
         </div>
-        <d1 class="stats" id="file-stats" hidden>
+        <dl class="stats" id="file-stats" hidden>
           <div class="stat">
             <dt>Size</dt>
             <dd id="file-size"></dd>
@@ -367,7 +368,7 @@
             <dt>Downloads</dt>
             <dd id="file-downloads"></dd>
           </div>
-        </d1>
+        </dl>
 
         <a class="button button-large" id="download-button" href="#" hidden>
           <svg
@@ -444,7 +445,7 @@
         xhr.upload.addEventListener("progress", (event) => {
           if (event.lengthComputable) {
             const progress = Math.round((event.loaded / event.total) * 100);
-            showUploadStatus(`Uploading ${file.name} [${percent}%]`);
+            showUploadStatus(`Uploading ${file.name} [${progress}%]`);
           }
         });
 
@@ -507,7 +508,7 @@
         if (fileInput.disabled) {
           return;
         }
-        uploadFile(files[0]);
+        uploadFile(event.dataTransfer.files[0]);
       });
 
       // Download
@@ -531,6 +532,7 @@
 
         if (!response.ok) {
           showDownloadError("Something went wrong loading the file.");
+          return;
         }
 
         const metadata = await response.json();
