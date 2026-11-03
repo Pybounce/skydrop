@@ -20,26 +20,26 @@ public class CosmosUsageDb : IUsageDb
         _usageContainer = db.GetContainer(containerName);
     }
 
-    public async Task<bool> TryIncrementDownloadWithinLimitAsync(string id, long byte_increment, long byte_limit, CancellationToken ct)
+    public async Task<bool> TryIncrementDownloadWithinLimitAsync(string id, long byteIncrement, long byteLimit, CancellationToken ct)
     {
-        return await TryIncrementWithinLimitAsync(id, byte_increment, byte_limit, "downloadedBytes", ct);
+        return await TryIncrementWithinLimitAsync(id, byteIncrement, byteLimit, "downloadedBytes", ct);
     }
 
-    public async Task<bool> TryIncrementUploadWithinLimitAsync(string id, long byte_increment, long byte_limit, CancellationToken ct)
+    public async Task<bool> TryIncrementUploadWithinLimitAsync(string id, long byteIncrement, long byteLimit, CancellationToken ct)
     {
-        return await TryIncrementWithinLimitAsync(id, byte_increment, byte_limit, "uploadedBytes", ct);
+        return await TryIncrementWithinLimitAsync(id, byteIncrement, byteLimit, "uploadedBytes", ct);
     }
 
-    private async Task<bool> TryIncrementWithinLimitAsync(string id, long byte_increment, long byte_limit, string fieldName, CancellationToken ct)
+    private async Task<bool> TryIncrementWithinLimitAsync(string id, long byteIncrement, long byteLimit, string fieldName, CancellationToken ct)
     {
         for (int attempt = 0; attempt < 2; attempt++)
         {
             try
             {
-                var patch_op = PatchOperation.Increment($"/{fieldName}", byte_increment);
+                var patch_op = PatchOperation.Increment($"/{fieldName}", byteIncrement);
                 await _usageContainer.PatchItemAsync<MonthlyUsage>(id, new PartitionKey(id), [patch_op] , requestOptions: new PatchItemRequestOptions
                 {
-                    FilterPredicate = $"FROM c WHERE c.{fieldName} <= {byte_limit - byte_increment}"
+                    FilterPredicate = $"FROM c WHERE c.{fieldName} <= {byteLimit - byteIncrement}"
                 }, ct);
                 return true;
             }
