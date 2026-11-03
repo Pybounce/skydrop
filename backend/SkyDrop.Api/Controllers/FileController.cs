@@ -10,14 +10,14 @@ namespace SkyDrop.Api.Controllers;
 public class FileController: ControllerBase
 {
 
-    private readonly IStreamService _streamService;
+    private readonly IFileDb _fileDb;
     private readonly IUsageLimiter _usageLimiter;
     private readonly IKeyGenerator _keyGenerator;   // yes I know this sucks, will be splitting out into 2 services soon.
     private readonly IFileMetadataDb _metadataDb;
 
-    public FileController(IStreamService streamService, IUsageLimiter usageLimiter, IKeyGenerator keyGenerator, IFileMetadataDb metadataDb)
+    public FileController(IFileDb fileDb, IUsageLimiter usageLimiter, IKeyGenerator keyGenerator, IFileMetadataDb metadataDb)
     {
-        _streamService = streamService;
+        _fileDb = fileDb;
         _usageLimiter = usageLimiter;
         _keyGenerator = keyGenerator;
         _metadataDb = metadataDb;
@@ -43,7 +43,7 @@ public class FileController: ControllerBase
         // ensure a min size also
 
         var input = Request.Body;
-        await _streamService.UploadAsync(fileId, input, ct);
+        await _fileDb.UploadAsync(fileId, input, ct);
 
         return Ok(fileId);
     }
@@ -56,7 +56,7 @@ public class FileController: ControllerBase
 
         if (await _usageLimiter.TryReserveDownloadAsync(metadata.Size, ct) == false) { return Problem(null, null, StatusCodes.Status429TooManyRequests, "Download quota reached.", null); }
 
-        var stream = await _streamService.DownloadAsync(key, ct);
+        var stream = await _fileDb.DownloadAsync(key, ct);
         if (stream == null) { return NotFound(); }
 
         Response.Headers["X-Content-Type-Options"] = "nosniff";

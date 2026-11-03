@@ -2,7 +2,7 @@
 
 namespace SkyDrop.Api.ServiceInterfaces;
 
-public interface IStreamService
+public interface IFileDb
 {
     public Task UploadAsync(string fileId, Stream input, CancellationToken ct);
 

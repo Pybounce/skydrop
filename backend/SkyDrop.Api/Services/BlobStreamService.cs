@@ -8,11 +8,11 @@ using Azure;
 
 namespace SkyDrop.Api.Services;
 
-public class BlobStreamService : IStreamService
+public class BlobFileDb : IFileDb
 {
     private readonly BlobContainerClient _containerClient;
 
-    public BlobStreamService(BlobContainerClient containerClient)
+    public BlobFileDb(BlobContainerClient containerClient)
     {
         _containerClient = containerClient;
     }

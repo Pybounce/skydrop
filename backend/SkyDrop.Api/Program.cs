@@ -21,7 +21,7 @@ builder.Services.AddSingleton(new CosmosClient(cosmosConnectionString, new Cosmo
     }
 }).GetDatabase(cosmosDatabaseName));
 
-builder.Services.AddSingleton<IStreamService, BlobStreamService>();
+builder.Services.AddSingleton<IFileDb, BlobFileDb>();
 builder.Services.AddSingleton<IKeyGenerator, SimpleKeyGenerator>();
 
 builder.Services.Configure<MonthlyUsageLimits>(o => {
