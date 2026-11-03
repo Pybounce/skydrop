@@ -10,20 +10,15 @@ namespace SkyDrop.Api.Controllers;
 [Route("[controller]")]
 public class FileController: ControllerBase
 {
-
-    private readonly IFileDb _fileDb;
-    private readonly IUsageLimiter _usageLimiter;
-    private readonly IKeyGenerator _keyGenerator;   // yes I know this sucks, will be splitting out into 2 services soon.
-    private readonly IFileMetadataDb _metadataDb;
     private readonly IFileUploader _fileUploader;
+    private readonly IFileDownloader _fileDownloader;
+    private readonly IFileMetadataDb _metadataDb;
 
-    public FileController(IFileDb fileDb, IUsageLimiter usageLimiter, IKeyGenerator keyGenerator, IFileMetadataDb metadataDb, IFileUploader fileUploader)
+    public FileController(IFileUploader fileUploader, IFileDownloader fileDownloader, IFileMetadataDb metadataDb)
     {
-        _fileDb = fileDb;
-        _usageLimiter = usageLimiter;
-        _keyGenerator = keyGenerator;
-        _metadataDb = metadataDb;
         _fileUploader = fileUploader;
+        _fileDownloader = fileDownloader;
+        _metadataDb = metadataDb;
     }
 
     [HttpPost(Name = "Upload")]
@@ -38,7 +33,7 @@ public class FileController: ControllerBase
         var uploadResult = await _fileUploader.Upload(content, name, size, ct);
         return uploadResult switch {
             UploadResult.Success r => Ok(r.FileId),
-            UploadResult.UsageLimitReached r => Problem(null, null, StatusCodes.Status429TooManyRequests, "Update quota reached.", null),
+            UploadResult.UsageLimitReached => Problem(null, null, StatusCodes.Status429TooManyRequests, "Update quota reached.", null),
             _ => throw new UnreachableException() 
         };
     }
@@ -46,16 +41,16 @@ public class FileController: ControllerBase
     [HttpGet("Download/{key}", Name = nameof(Download))]
     public async Task<IActionResult> Download(string key, CancellationToken ct)
     {
-        var metadata = await _metadataDb.IncrementDownloadsAsync(key, ct);
-        if (metadata == null) { return NotFound(); }
 
-        if (await _usageLimiter.TryReserveDownloadAsync(metadata.Size, ct) == false) { return Problem(null, null, StatusCodes.Status429TooManyRequests, "Download quota reached.", null); }
-
-        var stream = await _fileDb.DownloadAsync(key, ct);
-        if (stream == null) { return NotFound(); }
+        var downloadResult = await _fileDownloader.Download(key, ct);
 
         Response.Headers["X-Content-Type-Options"] = "nosniff";
-        return File(stream, "application/octet-stream", metadata.Name, enableRangeProcessing: true);
+        return downloadResult switch
+        {
+            DownloadResult.Success r => File(r.Content, "application/octet-stream", r.Metadata.Name, enableRangeProcessing: true),
+            DownloadResult.UsageLimitReached => Problem(null, null, StatusCodes.Status429TooManyRequests, "Download quota reached.", null),
+            _ => throw new UnreachableException() 
+        };
     }
 
     [HttpGet("Metadata/{key}", Name = nameof(Metadata))]

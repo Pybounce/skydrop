@@ -22,6 +22,7 @@ builder.Services.AddSingleton(new CosmosClient(cosmosConnectionString, new Cosmo
 }).GetDatabase(cosmosDatabaseName));
 
 builder.Services.AddSingleton<IFileUploader, FileUploader>();
+builder.Services.AddSingleton<IFileDownloader, FileDownloader>();
 builder.Services.AddSingleton<IFileDb, BlobFileDb>();
 builder.Services.AddSingleton<IKeyGenerator, SimpleKeyGenerator>();
 

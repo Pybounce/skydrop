@@ -11,7 +11,5 @@ public record UploadResult
             FileId = fileId;
         }
     }
-    public record UsageLimitReached : UploadResult
-    {
-    }
+    public record UsageLimitReached : UploadResult;
 }
