@@ -1,6 +1,7 @@
 
-using System.Reflection.Metadata.Ecma335;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using SkyDrop.Api.DTOs;
 using SkyDrop.Api.ServiceInterfaces;
 
 namespace SkyDrop.Api.Controllers;
@@ -14,13 +15,15 @@ public class FileController: ControllerBase
     private readonly IUsageLimiter _usageLimiter;
     private readonly IKeyGenerator _keyGenerator;   // yes I know this sucks, will be splitting out into 2 services soon.
     private readonly IFileMetadataDb _metadataDb;
+    private readonly IFileUploader _fileUploader;
 
-    public FileController(IFileDb fileDb, IUsageLimiter usageLimiter, IKeyGenerator keyGenerator, IFileMetadataDb metadataDb)
+    public FileController(IFileDb fileDb, IUsageLimiter usageLimiter, IKeyGenerator keyGenerator, IFileMetadataDb metadataDb, IFileUploader fileUploader)
     {
         _fileDb = fileDb;
         _usageLimiter = usageLimiter;
         _keyGenerator = keyGenerator;
         _metadataDb = metadataDb;
+        _fileUploader = fileUploader;
     }
 
     [HttpPost(Name = "Upload")]
@@ -29,23 +32,15 @@ public class FileController: ControllerBase
     {
         if (Request.ContentLength == null) { return StatusCode(StatusCodes.Status411LengthRequired); }
         var size = Request.ContentLength.Value;
-        if (await _usageLimiter.TryReserveUploadAsync(size, ct) == false) { return Problem(null, null, StatusCodes.Status429TooManyRequests, "Update quota reached.", null); }
+        var name = GetFileName();
+        var content = Request.Body;
 
-        var fileId = _keyGenerator.GenerateKey();
-        var metadata = new FileMetadata()
-        {
-            Id = fileId,
-            Name = GetFileName(),
-            Size = size,
-            DownloadCount = 0
+        var uploadResult = await _fileUploader.Upload(content, name, size, ct);
+        return uploadResult switch {
+            UploadResult.Success r => Ok(r.FileId),
+            UploadResult.UsageLimitReached r => Problem(null, null, StatusCodes.Status429TooManyRequests, "Update quota reached.", null),
+            _ => throw new UnreachableException() 
         };
-        await _metadataDb.CreateAsync(metadata, ct);
-        // ensure a min size also
-
-        var input = Request.Body;
-        await _fileDb.UploadAsync(fileId, input, ct);
-
-        return Ok(fileId);
     }
 
     [HttpGet("Download/{key}", Name = nameof(Download))]

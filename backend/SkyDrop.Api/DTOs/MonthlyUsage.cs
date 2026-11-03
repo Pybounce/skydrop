@@ -1,3 +1,7 @@
+
+namespace SkyDrop.Api.DTOs;
+
+
 public record MonthlyUsage
 {
     public required string Id { get; init; }

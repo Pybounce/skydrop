@@ -1,4 +1,7 @@
 
+namespace SkyDrop.Api.DTOs;
+
+
 public record FileMetadata
 {
     public required string Id { get; init; }
