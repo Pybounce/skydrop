@@ -9,17 +9,11 @@ namespace SkyDrop.Api.Services;
 
 public class CosmosFileMetadataDb : IFileMetadataDb
 {
-
     private readonly Container _metadataContainer;
 
-    public CosmosFileMetadataDb(Database db, IConfiguration config)
+    public CosmosFileMetadataDb([FromKeyedServices(CosmosContainerKeys.Metadata)] Container metadataContainer)
     {
-        // I don't love having configuration outside of program.cs
-        //  consider putting all container names into IOptions<CosmosContainerNames> or just a service ICosmosContainersContainer... 
-        var containerName = config["Cosmos:FileMetadataContainerName"];
-        if (string.IsNullOrWhiteSpace(containerName)) { throw new InvalidOperationException("Cosmos:FileMetadataContainerName is not configured."); }
-        
-        _metadataContainer = db.GetContainer(containerName);
+        _metadataContainer = metadataContainer;
     }
 
     public async Task CreateAsync(FileMetadata metadata, CancellationToken ct)
