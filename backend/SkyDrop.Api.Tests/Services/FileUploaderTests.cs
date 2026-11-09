@@ -3,7 +3,7 @@ using SkyDrop.Api.Data;
 using SkyDrop.Api.ServiceInterfaces;
 using SkyDrop.Api.Services;
 
-namespace SkyDrop.Api.Tests;
+namespace SkyDrop.Api.Tests.Services;
 
 public class FileUploaderTests
 {
