@@ -6,6 +6,7 @@ on:
       - master
     paths:
       - "backend/SkyDrop.Api/**"
+      - "backend/SkyDrop.Api.Tests/**"
       - ".github/workflows/deploy-api.yml"
   workflow_dispatch:
 
@@ -14,9 +15,25 @@ env:
   IMAGE_NAME: skydrop-api
   WEBAPP_NAME: skydrop-api
   API_DIR: backend/SkyDrop.Api
+  TESTS_DIR: backend/SkyDrop.Api.Tests
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v5
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Run tests
+        run: dotnet test ${{ env.TESTS_DIR }} --configuration Release
+
   build-and-deploy:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Check out
