@@ -18,7 +18,7 @@ public class CosmosFileMetadataDb : IFileMetadataDb
 
     public async Task CreateAsync(FileMetadata metadata, CancellationToken ct)
     {
-        await _metadataContainer.CreateItemAsync(metadata);
+        await _metadataContainer.CreateItemAsync(metadata, null, null, ct);
     }
 
     public async Task<FileMetadata?> IncrementDownloadsAsync(string fileId, CancellationToken ct)
