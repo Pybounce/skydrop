@@ -2,6 +2,7 @@ using Azure.Storage.Blobs;
 using SkyDrop.Api.ServiceInterfaces;
 using SkyDrop.Api.Services;
 using Microsoft.Azure.Cosmos;
+using SkyDrop.Api.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,9 @@ builder.Services.AddSingleton(new CosmosClient(cosmosConnectionString, new Cosmo
         PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase
     }
 }).GetDatabase(cosmosDatabaseName));
+
+builder.Services.AddKeyedSingleton(CosmosContainerKeys.Metadata, (sp, _) => sp.GetRequiredService<Database>().GetContainer(builder.Configuration["Cosmos:FileMetadataContainerName"] ?? throw new InvalidOperationException("Cosmos:FileMetadataContainerName is not configured.")));
+builder.Services.AddKeyedSingleton(CosmosContainerKeys.Usage, (sp, _) => sp.GetRequiredService<Database>().GetContainer(builder.Configuration["Cosmos:UsageContainerName"] ?? throw new InvalidOperationException("Cosmos:UsageContainerName is not configured.")));
 
 builder.Services.AddSingleton<IFileUploader, FileUploader>();
 builder.Services.AddSingleton<IFileDownloader, FileDownloader>();

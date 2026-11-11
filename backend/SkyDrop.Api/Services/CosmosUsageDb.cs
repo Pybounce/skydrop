@@ -2,7 +2,7 @@
 
 using System.Net;
 using Microsoft.Azure.Cosmos;
-using SkyDrop.Api.DTOs;
+using SkyDrop.Api.Data;
 using SkyDrop.Api.ServiceInterfaces;
 
 namespace SkyDrop.Api.Services;
@@ -11,14 +11,9 @@ public class CosmosUsageDb : IUsageDb
 {
     private readonly Container _usageContainer;
 
-    public CosmosUsageDb(Database db, IConfiguration config)
+    public CosmosUsageDb([FromKeyedServices(CosmosContainerKeys.Usage)] Container usageContainer)
     {
-        // I don't love having configuration outside of program.cs
-        //  consider putting all container names into IOptions<CosmosContainerNames> or just a service ICosmosContainersContainer... 
-        var containerName = config["Cosmos:UsageContainerName"];
-        if (string.IsNullOrWhiteSpace(containerName)) { throw new InvalidOperationException("Cosmos:UsageContainerName is not conofigured."); }
-        
-        _usageContainer = db.GetContainer(containerName);
+        _usageContainer = usageContainer;
     }
 
     public async Task<bool> TryIncrementDownloadWithinLimitAsync(string id, long byteIncrement, long byteLimit, CancellationToken ct)

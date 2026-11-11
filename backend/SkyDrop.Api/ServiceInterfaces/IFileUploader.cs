@@ -1,6 +1,6 @@
 
 
-using SkyDrop.Api.DTOs;
+using SkyDrop.Api.Data;
 
 namespace SkyDrop.Api.ServiceInterfaces;
 

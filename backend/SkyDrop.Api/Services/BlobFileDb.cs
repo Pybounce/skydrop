@@ -1,8 +1,6 @@
 
 using SkyDrop.Api.ServiceInterfaces;
 using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Specialized;
-using Azure.Core;
 using Azure.Storage.Blobs.Models;
 using Azure;
 
@@ -19,7 +17,7 @@ public class BlobFileDb : IFileDb
 
     public async Task UploadAsync(string fileId, Stream input, CancellationToken ct)
     {
-        var blob = _containerClient.GetBlockBlobClient(fileId);
+        var blob = _containerClient.GetBlobClient(fileId);
         await blob.UploadAsync(input, new BlobUploadOptions
         {
             Conditions = new BlobRequestConditions { IfNoneMatch = ETag.All },
@@ -28,7 +26,7 @@ public class BlobFileDb : IFileDb
 
     public async Task<Stream?> DownloadAsync(string fileId, CancellationToken ct)
     {
-        var blob = _containerClient.GetBlockBlobClient(fileId);
+        var blob = _containerClient.GetBlobClient(fileId);
         try
         {
             return await blob.OpenReadAsync(new BlobOpenReadOptions(false), ct);

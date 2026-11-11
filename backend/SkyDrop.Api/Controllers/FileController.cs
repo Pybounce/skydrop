@@ -1,7 +1,7 @@
 
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using SkyDrop.Api.DTOs;
+using SkyDrop.Api.Data;
 using SkyDrop.Api.ServiceInterfaces;
 
 namespace SkyDrop.Api.Controllers;

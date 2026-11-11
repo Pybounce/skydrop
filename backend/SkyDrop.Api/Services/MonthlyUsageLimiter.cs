@@ -10,11 +10,13 @@ public class MonthlyUsageLimiter : IUsageLimiter
 {
     private readonly IUsageDb _usageDb;
     private readonly MonthlyUsageLimits _usageLimits;
+    private readonly TimeProvider _time;
 
-    public MonthlyUsageLimiter(IUsageDb usageDb, IOptions<MonthlyUsageLimits> usageLimits)
+    public MonthlyUsageLimiter(IUsageDb usageDb, IOptions<MonthlyUsageLimits> usageLimits, TimeProvider time)
     {
         _usageDb = usageDb;
         _usageLimits = usageLimits.Value;
+        _time = time;
     }
     
     public async Task<bool> TryReserveDownloadAsync(long bytes, CancellationToken ct)
@@ -29,6 +31,6 @@ public class MonthlyUsageLimiter : IUsageLimiter
 
     private string GenerateMonthId()
     {
-        return $"monthlim-{DateTime.UtcNow.ToString("yyyy-MM", CultureInfo.InvariantCulture).ToLower()}";
+        return $"monthlim-{_time.GetUtcNow().ToString("yyyy-MM", CultureInfo.InvariantCulture).ToLower()}";
     }
 }

@@ -1,5 +1,5 @@
 
-namespace SkyDrop.Api.DTOs;
+namespace SkyDrop.Api.Data;
 
 public record UploadResult
 {
