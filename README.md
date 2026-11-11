@@ -7,7 +7,7 @@
 ## Usage
 
 1. Head over to https://skydrop.skybounce.io and upload a file.
-2. Once uploaded, you'll be take to the download page and given a link to copy.
+2. Once uploaded, you'll be taken to the download page and given a link to copy.
 3. This link can be used by anyone to download your uploaded file until it expires.
 
 ## Design Choices
